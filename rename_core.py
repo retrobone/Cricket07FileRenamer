@@ -1,51 +1,55 @@
 import os
-import pandas as pd
 import xml.etree.ElementTree as ET
 from utils import get_ea_hash, safe_join, move_file_safe
+import csv
 
 def run_csv_organizer(folder, script_dir, log_func, is_dry, backup_root, manifest):
     log_func("\n[1/4] Running CSV Organizer")
+    
     csv_file = os.path.join(script_dir, "C07Files_Complete.csv")
     
     if not os.path.exists(csv_file):
-        log_func(f"[SKIP] CSV file 'C07Files_Complete.csv' not found in {script_dir}")
+        log_func(f"[SKIP] CSV file 'C07Files_Complete.csv' not found in the folder.")
         return
 
+    count = 0
     try:
-        df = pd.read_csv(csv_file)
+        with open(csv_file, mode='r', encoding='utf-8', errors='ignore') as f:
+            reader = csv.DictReader(f)
+            
+            for row in reader:
+                original_path = str(row.get('Absolute Path', '')).strip()
+                hash_name = str(row.get('MD5 hashed filename', '')).strip()
+                
+                # Skip empty rows
+                if not original_path:
+                    continue
+                    
+                # Calculate hash on the fly if it's missing in the CSV
+                if not hash_name:
+                    hash_name = get_ea_hash(original_path)
+                
+                try:
+                    target_path = safe_join(folder, original_path)
+                except ValueError as e:
+                    log_func(str(e))
+                    continue
+                
+                possible_src = [
+                    os.path.join(folder, hash_name),             
+                    os.path.join(folder, f"{hash_name}.fsh"),    
+                    os.path.join(folder, f"{hash_name}.big")     
+                ]
+                
+                for src in possible_src:
+                    if move_file_safe(src, target_path, folder, is_dry, backup_root, manifest, log_func):
+                        log_func(f"[CSV] Moved: {os.path.basename(src)} -> {original_path}")
+                        count += 1
+                        break
+                        
     except Exception as e:
         log_func(f"[ERROR] Could not read CSV: {e}")
         return
-
-    df['MD5 hashed filename'] = df['MD5 hashed filename'].fillna("")
-    missing_mask = (df['MD5 hashed filename'].astype(str).str.strip() == "")
-    
-    if missing_mask.sum() > 0:
-        log_func(f"Calculating {missing_mask.sum()} missing hashes in memory...")
-        df.loc[missing_mask, 'MD5 hashed filename'] = df.loc[missing_mask, 'Absolute Path'].apply(get_ea_hash)
-
-    count = 0
-    for row in df.to_dict("records"):
-        original_path = str(row['Absolute Path'])
-        hash_name = str(row['MD5 hashed filename'])
-        
-        try:
-            target_path = safe_join(folder, original_path)
-        except ValueError as e:
-            log_func(str(e))
-            continue
-        
-        possible_src = [
-            os.path.join(folder, hash_name),             
-            os.path.join(folder, f"{hash_name}.fsh"),    
-            os.path.join(folder, f"{hash_name}.big")     
-        ]
-        
-        for src in possible_src:
-            if move_file_safe(src, target_path, folder, is_dry, backup_root, manifest, log_func):
-                log_func(f"[CSV] Moved: {os.path.basename(src)} -> {original_path}")
-                count += 1
-                break
 
     log_func(f"CSV Module: Organized {count} files.")
 
