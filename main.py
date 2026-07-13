@@ -13,12 +13,23 @@ GITHUB_CSV_URL = "https://raw.githubusercontent.com/retrobone/Cricket07ReDir/ref
 # Core logic
 import rename_core
 
+def get_resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
 class CricketRecovererApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Cricket 07 File Renamer")
         self.root.geometry("800x600")
         self.root.resizable(False, False)
+
+        icon_path = get_resource_path("c07fr.ico")
+        if os.path.exists(icon_path):
+            self.root.iconbitmap(icon_path)
 
         # Variables
         self.target_folder = tk.StringVar()
