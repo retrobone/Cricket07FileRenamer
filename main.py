@@ -1,4 +1,5 @@
 import os
+import sys
 import datetime
 import threading
 import urllib.request
@@ -77,7 +78,12 @@ class CricketRecovererApp:
         threading.Thread(target=self.check_csv_update, args=(True,), daemon=True).start()
 
     def check_csv_update(self, manual=False):
-        script_dir = os.path.dirname(os.path.abspath(__file__))
+        if getattr(sys, 'frozen', False):
+        # If running as an .exe, get the folder where the .exe is located
+            script_dir = os.path.dirname(sys.executable)
+        else:
+            # If running as a normal python script
+            script_dir = os.path.dirname(os.path.abspath(__file__))
         local_csv_path = os.path.join(script_dir, "C07Files_Complete.csv")
 
         try:
@@ -138,7 +144,7 @@ class CricketRecovererApp:
 
     # INTERFACE
     def setup_ui(self):
-        
+
         # Menu Bar
         menubar = tk.Menu(self.root)
         
@@ -224,7 +230,13 @@ class CricketRecovererApp:
         thread.start()
 
     def execute_workflow(self, folder):
-        script_dir = os.path.dirname(os.path.abspath(__file__))
+        if getattr(sys, 'frozen', False):
+        # If running as an .exe, get the folder where the .exe is located
+            script_dir = os.path.dirname(sys.executable)
+        else:
+            # If running as a normal python script
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+        local_csv_path = os.path.join(script_dir, "C07Files_Complete.csv")
         is_dry = self.dry_run.get()
         manifest = []
         backup_root = None
