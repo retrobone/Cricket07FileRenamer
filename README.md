@@ -6,10 +6,10 @@ Program that renames MD5-hashed filenames of Cricket 07 to proper filenames.<br>
 Run and select source directory and run the program, maps files in proper name format, files that still remain and in hashed format can be detailed
 
 <ul>
-  <li>Renames with the help of <a href="github.com/retrobone/Cricket07ReDir">Cricket 07 ReDir</a> and various syntaxes dynamically</li>
+  <li>Renames with the help of <a href="https://github.com/retrobone/Cricket07ReDir">Cricket 07 ReDir</a> and various syntaxes dynamically</li>
 
 
-<li>These renamed files can be then used with <a href="github.com/retrobone/Cricket07FileLoader">Cricket 07 File Loader</a></li>
+<li>These renamed files can be then used with <a href="https://github.com/retrobone/Cricket07FileLoader">Cricket 07 File Loader</a></li>
 </ul>
 
 ## Guide for using patches with Ultimate ASI Loader
